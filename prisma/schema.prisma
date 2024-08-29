@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  name          String
+  password      String
+  role          UserRole
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  requestsMade  Request[] @relation("Requester")
+  requestsToApprove Request[] @relation("Approver")
+}
+
+model Request {
+  id            String    @id @default(uuid())
+  title         String
+  content       String
+  status        RequestStatus @default(PENDING)
+  fileUrl       String?
+  requesterId   String
+  requester     User      @relation("Requester", fields: [requesterId], references: [id])
+  approverId    String?
+  approver      User?     @relation("Approver", fields: [approverId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum UserRole {
+  REQUESTER
+  APPROVER
+  ADMIN
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
